@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html ng-app="users">
+<head>
+	<meta charset="UTF-8">
+	<title>Usuários</title>
+	<!-- Latest compiled and minified CSS -->
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="resources/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="resources/css/bootstrap-datepicker.min.css" />
+	<link rel="stylesheet" href="resources/css/app/style.css" />
+</head>
+<body ng-controller="usersCtrl">
+	<section class="container">
+		<div ng-show="blnSucessOperation"  class="alert alert-success col-sm-12" >
+			{{msgOperationList}}
+	    </div>
+		<div ng-show="blnErrorOperation"  class="col-sm-12 alert alert-danger" >
+			{{msgOperationList}}
+	    </div>   
+		<div class="panel panel-primary">
+			<div class="panel-heading">Lista de Usuários</div>
+			<div class="panel-body">
+				<div class="col-sm-6 form-group">
+			    	<label for="txtNomeFind">Nome:</label>
+			    	<input type="text" class="form-control" id="txtNomeFind" name="txtNomeFind" ng-model="toFind.name">
+				</div>
+				<div class="col-sm-3 form-group">
+			    	<label for="lstSituationFind">Situação:</label>
+			    	<select name="lstSituationFind" id="lstSituationFind" ng-model="toFind.situation" class="form-control">
+						<option value="" selected="selected">Todos</option>
+						<option value="S">Habilitado</option>
+						<option value="N">Desabilitado</option>
+					</select>	
+				</div>
+				<div class="col-sm-3 form-group">
+			    	<label for="lstProfileFind">Perfil:</label>
+			    	<select name="lstProfileFind" id="lstProfileFind" ng-model="toFind.profile" class="form-control">
+			    		<option value="" selected="selected" >Todos</option>
+						<option value="3">Gestor Nacional</option>
+						<option value="2">Gestor Estadual</option>
+						<option value="1">Gestor Municipal</option>
+					</select>	
+				</div>
+				<div class="col-sm-12 form-group text-right">					
+				  	<button type="button" class="btn btn-primary" ng-click="findByFilter()">
+				  		<i class="fa fa-search"></i>
+				  		Pesquisar
+				  	</button>
+			  	</div>
+			</div>
+		</div>
+		<section class="toolbar">
+			<div>
+				<button type="button" ng-click="newUser()" class="btn btn-primary">
+					<i class="fa fa-plus"></i>
+					Incluir
+				</button>
+			</div>
+		</section>
+		
+		<section class="table-wrapper">
+			<table id="tblUsers" class="table table-bordered">
+				<thead>
+					<tr>
+						<th>E-mail</th>
+						<th>Nome</th>
+						<th>Perfil</th>
+						<th>Habilitado</th>
+						<th>Ações</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-show="users.length!=0" ng-repeat="user in users">
+						<td>{{user.email}}</td>
+						<td>{{user.name}}</td>
+						<td>
+							<span ng-switch="user.profile">
+								<span ng-switch-when="0">
+								  Aluno
+								</span>
+								<span ng-switch-when="1">
+								  Gestor Municipal
+								</span>	
+								<span ng-switch-when="2">
+								  Gestor Estadual
+								</span>
+								<span ng-switch-when="3">
+								  Gestor Nacional
+								</span>
+							</span>																
+						</td>
+						<td>
+							<input ng-model="user.situation" class="msg" ng-change="change(user)" ng-true-value="'S'" ng-false-value="'N'" id="{{user.cpf}}" type="checkbox" > 
+						</td>
+						<td>
+							<div>
+							<a title="Editar" ng-click="editUser(user)">
+								<i class="material-icons">create</i>
+							</a>
+							<a title="Excluir" class="msg"  ng-click="deleteUser(user)">
+								<i class="material-icons">delete</i>
+							</a>
+							</div>
+						</td>
+					</tr>
+					<tr ng-show="users.length == 0 || users.length == 'null' || users.length == 'undefined'" >
+						<td colspan="5">Nenhum registro encontrado </td>
+					</tr>						
+				</tbody>
+			</table>
+		</section>
+		
+		<!-- Modal new -->
+		<div id="new" class="modal fade primary" role="dialog">
+		    <div class="modal-dialog" style="width: 90%">
+		        <div class="modal-content">
+		            <form name="form" ng-submit="doAction()">
+		            
+		                <!-- header -->
+		                <div class="modal-header">
+		                    <button type="button" class="close" 
+		                            data-dismiss="modal" aria-label="Close">
+		                        <span aria-hidden="true">&times;</span>
+		                    </button>
+		                    <h4 class="modal-title" id="myModalLabel">Incluir usuário</h4>
+		                </div>
+		                
+		                <!-- body -->
+		                <div class="panel-body">
+		                
+							<div ng-show="blnSucess"  class="alert alert-success col-sm-12 form-group auto-hide" >
+								{{msgOperation}}
+		                    </div>
+							<div ng-show="blnError"  class="col-sm-12 form-group alert alert-danger auto-hide" >
+								{{msgOperation}}
+		                    </div> 
+		                                       
+							<div class="col-sm-6 form-group">
+		                        <label for="email">E-mail:*</label>
+		                        <div class="input-group">
+		                        	<span class="input-group-addon">
+		                        		<span class="glyphicon glyphicon-envelope"></span>
+		                        	</span>
+			                        <input type="email" id="email" class="form-control"
+			                        	ng-model="toCreate.email" name="email" required ng-required="true"/>
+			                    </div>
+		                    </div>
+		                    
+							<div class="col-sm-6 form-group">
+		                        <label for="name">Nome:*</label>       
+		                        <div class="input-group">
+		                        	<span class="input-group-addon">
+				                        <span class="glyphicon glyphicon-user"></span>
+				                    </span>
+				                    <input type="text" id="name" name="name" 
+		                        		ng-model="toCreate.name" class="form-control" required/>
+		                        </div>
+		                    </div>
+		                    
+		                    <div class="col-sm-2 form-group">
+		                        <label for="cpf">CPF:*</label>
+		                        <div class="input-group">
+		                        	<span class="input-group-addon">
+		                        		<span class="glyphicon glyphicon-credit-card"></span>
+		                        	</span>
+		                        	<input type="text" id="cpf" name="cpf" ng-model="toCreate.cpf" ng-cpf ui-mask="999.999.999-99" 
+		                        	class="form-control" required />
+		                        </div>
+		                    </div>
+		                    
+			                <div class="col-sm-2 form-group">
+		                        <label for="phone">Telefone</label>
+		                        <div class="input-group">
+		                        	<span class="input-group-addon">
+		                        		<span class="glyphicon glyphicon-phone"></span>
+		                        	</span>
+			                        <input type="text" id="phone" class="form-control" ng-model="toCreate.phone" name="phone" 
+			                        	ui-mask="(99)99999-9999" ng-required="false"/>
+			                    </div>
+		                    </div>
+		                    
+		                    <div class="col-sm-4 form-group">
+		                        <label for="role">Função:*</label>
+		                        <div class="input-group">
+		                        	<span class="input-group-addon">
+		                        		<span class="glyphicon glyphicon-user"></span>
+		                        	</span>
+	                        	
+			                        <select name="role" id="role" ng-model="toCreate.role.id" required class="form-control">
+								      <option ng-repeat="option in roles" value="{{option.id}}">{{option.name}}</option>
+								    </select>	
+			                    </div>
+		                    </div>
+
+							<div class="col-sm-4 form-group">
+		                        <label for="birthDate">Perfil:*</label>
+		                        <div class="input-group">
+		                        	<span class="input-group-addon">
+		                        		<span class="glyphicon glyphicon-user"></span>
+		                        	</span>
+			                        <select name="role" id="profile" ng-model="toCreate.profile" required class="form-control">
+								      <option ng-repeat="option in profiles.availableOptions" value="{{option.id}}">{{option.name}}</option>
+								    </select>				                        	
+			                    </div>
+		                    </div>
+
+		                </div>
+		                
+		                <!-- footer -->
+		                <div class="modal-footer">
+		                    <button type="button" class="btn btn-default" ng-click="reset()">Voltar</button>
+		                    <button type="submit" class="btn btn-primary msg" ng-disabled="!form.$valid">
+		                    	<i class="fa fa-check"></i>
+		                    	Salvar
+		                    </button>
+		                </div>
+		            </form>
+		        </div>
+		    </div>
+		</div>
+		
+	</section>
+	
+	<!-- Modal delete -->
+		<div id="delete" class="modal fade danger" role="dialog">
+		    <div class="modal-dialog" style="width: 400px">
+		        <div class="modal-content">
+		            <form ng-submit="doDelete()">
+		                <!-- header -->
+		                <div class="modal-header">
+		                    <button type="button" class="close" 
+		                            data-dismiss="modal" aria-label="Close">
+		                        <span aria-hidden="true">&times;</span>
+		                    </button>
+		                    <h4 class="modal-title" id="myModalLabel">Excluir usuário</h4>
+		                </div>
+		                <!-- body -->
+		                <div class="body" style="padding: 12px">
+		                	<h2 style="color: #555; font-size: 16px; text-align:center">
+		                        Deseja realmente excluir o usuário {{toDelete.name}}?
+		                    </h2>
+		                </div>
+		                <!-- footer -->
+		                <div class="modal-footer">
+		                    <button type="button" class="btn btn-default" 
+		                                data-dismiss="modal">Cancelar</button>
+		                    <button type="submit" class="btn btn-danger">
+		                    	<i class="fa fa-times"></i>
+		                    	Excluir
+		                    </button>
+		                </div>
+		            </form>
+		        </div>
+		    </div>
+		</div>
+		
+	<!-- libs -->
+	<script src="resources/js/jquery.min.js"></script>
+	<script src="resources/js/angular.js"></script>
+	<script src="resources/js/bootstrap.min.js"></script>
+	<script src="resources/js/moment-with-locales.min.js"></script>
+	<script src="resources/js/bower_components/angular-ui-mask/dist/mask.min.js"></script>
+	<script src="resources/js/bower_components/cpf_cnpj/build/cpf.min.js"></script>
+	<script src="resources/js/bower_components/cpf_cnpj/build/cnpj.min.js"></script>
+	<script src="resources/js/bower_components/cpf_cnpj/build/ngCpfCnpj.js"></script>
+	<!-- scripts -->
+	<script src="resources/js/app/app.js"></script>
+
+	<script>
+		$(document).ready(function() {
+		});
+	</script>
+</body>
+</html>
