@@ -7,4 +7,4 @@
 3. Modify the **persistence.xml** file and change the DataSource name: `<jta-data-source>your datasource jndi name here</jta-data-source>`.
 4. Before the first run uncomment, in the file persistence.xml, the lines for the creation of the tables and the insertion of the initial registers.
 5. Compile and run.
-6. http://<localhost>:<port>/desafio/index.html
+6. Example: http://localhost:8080/desafio/index.html
